@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calor de Combustión - Laboratorio Virtual</title>
+      
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+</head>
+ <style>
+    body{
+       background: linear-gradient(to right,rgb(99, 203, 99),rgb(105, 235, 239));
+    
+      
+     }
+
+     p{
+        font-size:22px;
+        font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+     }
+
+    p.copy{
+        font-size:1em;
+     text-align: right;
+    color: white;
+    opacity: 0.4;
+    }
+    
+    .holi{
+      padding-left: 12px;
+  
+    }
+  
+    .r{
+        color: white;
+    }
+         
+        .bomba-calorimetro {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            margin: 0 auto;
+        }
+        .recipiente {
+            position: absolute;
+            width: 200px;
+            height: 300px;
+            bottom: 0;
+            left: 50px;
+            background-color: #e0e0e0;
+            border-radius: 10px 10px 0 0;
+            border: 11px solid #999;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+        }
+        .tapa {
+            position: absolute;
+            width: 220px;
+            height: 60px;
+            top: 80px;
+            left: 40px;
+            background-color: #555;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .agua {
+            position: absolute;
+            width: 182px;
+            height: 200px;
+            bottom: 7px;
+            left: 60px;
+            background-color: rgba(161, 220, 255, 0.5);  
+            border-radius: 0 0 6px 6px;
+            transition: height 0.5s ease;
+        }
+        .termometro {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            top: 220px;
+            left: 150px;
+            background-color: #8b4513;
+            border-radius: 60%;
+        }
+        .electrodos {
+            position: absolute;
+            width: 7px;
+            height: 200px;
+            top: 110px;
+            left: 130px;
+            background-color: #555;
+        }
+        .minicilindro {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 290px;
+            left: 110px;
+            background-color: #43bbb5;
+            border: 5px solid #555;
+            border-radius: 10px;
+            z-index: 7;
+        }
+        .electrodos:after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 110px;
+            left: 30px;
+            top: 8px;
+            background-color: #555;
+        }
+        .chispa {
+            position: absolute;
+            width: 36px;
+            height: 30px;
+            top: 220px;
+            left: 150px;
+            background-color: rgb(257, 128, 0);
+            border-radius: 80%;
+            box-shadow: 0 0 9px 7px rgb(255, 196, 0);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .etiqueta-temp {
+            position: absolute;
+            top: 190px;
+            left: 185px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #d00;
+            background-color: #fff;
+            padding: 2px 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .bubble {
+            position: absolute;
+            top: 260px;
+            background-color: rgba(253, 255, 255, 0.523);
+            border-radius: 50%;
+            animation: bubble-float 2s infinite ease-in;
+        }
+        @keyframes bubble-float {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+        .progress-container {
+            position: relative;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            position: absolute;
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .flame {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #ff5722;
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 
+                0 0 10px #ff5722,
+                0 0 20px #ff9800,
+                0 0 30px #ffc107;
+            opacity: 0;
+            animation: flicker 0.5s infinite alternate;
+        }
+        @keyframes flicker {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+
+    .lista{
+        font-size: 20px;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .container2{
+
+ border-radius: 20px;
+ padding: 2px;
+
+
+    }
+    </style>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-green-800 mb-2">
+                <i class="fas fa-fire mr-2"></i>Laboratorio Virtual de Calor de Combustión
+            </h1>
+            
+            <br>
+            <br>
+           
+            <div class="container2">
+
+                <p class="r">Bienvenido al Laboratorio Virtual de Calor de Combustión. Determina el calor de combustión de diferentes compuestos orgánicos mediante esta simulación virtual.</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Panel de configuración -->
+            <div class="holi">
+                <h2 class="text-xl font-semibold mb-4 text-blue-700 flex items-center">
+                    <i class="fas fa-cogs mr-2"></i> Configuración del Experimento
+                </h2>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium" for="compuesto">
+                        <i class="fas fa-flask mr-1"></i> Compuesto a analizar:
+                    </label>
+                    <select id="compuesto" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="metano">Metano (CH₄)</option>
+                        <option value="etano">Etano (C₂H₆)</option>
+                        <option value="propano">Propano (C₃H₈)</option>
+                        <option value="butano">Butano (C₄H₁₀)</option>
+                        <option value="tolueno">Tolueno (C₇H₈)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium" for="moles">
+                        <i class="fas fa-atom mr-1"></i> Moles del compuesto (mol):
+                    </label>
+                    <input type="number" id="moles" min="0.001" step="0.001" value="0.1" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2 font-medium" for="temp_inicial">
+                        <i class="fas fa-thermometer-half mr-1"></i> Temperatura inicial (°C):
+                    </label>
+                    <input type="number" id="temp_inicial" min="20" max="30" step="0.1" value="25.0" 
+                           class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <button id="iniciar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-play mr-2"></i> Iniciar Experimento
+                </button>
+                
+                <div id="progress-container" class="progress-container mt-4 hidden">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="resultados" class="mt-6 hidden">
+                    <h3 class="text-lg font-semibold mb-4 text-green-700 flex items-center">
+                        <i class="fas fa-clipboard-check mr-2"></i> Resultados del Experimento
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <p class="text-gray-600 flex items-center">
+                                <i class="fas fa-thermometer-three-quarters mr-2"></i> Temperatura final:
+                            </p>
+                            <p id="temp_final" class="font-bold text-xl text-blue-800">-- °C</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <p class="text-gray-600 flex items-center">
+                                <i class="fas fa-arrow-up mr-2"></i> ΔT:
+                            </p>
+                            <p id="delta_temp" class="font-bold text-xl text-blue-800">-- °C</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 col-span-2">
+                            <p class="text-gray-600 flex items-center mb-2">
+                                <i class="fas fa-fire mr-2"></i> Resultados Termodinámicos:
+                            </p>
+                            <div id="calor_combustion" class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="font-semibold">ΔH (molar):</div>
+                                <div>-- kJ/mol</div>
+                                <div class="font-semibold">ΔU (molar):</div>
+                                <div>-- kJ/mol</div>
+                                <div class="font-semibold">ΔH (total):</div>
+                                <div>-- kJ</div>
+                                <div class="font-semibold">ΔU (total):</div>
+                                <div>-- kJ</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button id="exportar_datos" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
+                            <i class="fas fa-file-export mr-2"></i> Exportar Datos
+                        </button>
+                        <button id="reiniciar" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
+                            <i class="fas fa-redo mr-2"></i> Reiniciar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simulación visual -->
+            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 text-blue-700 flex items-center">
+                    <i class="fas fa-eye mr-2"></i> Simulación de la Bomba Calorimétrica
+                </h2>
+                
+                <div class="bomba-calorimetro mb-6 relative">
+                    <div class="recipiente"></div>
+                    <div class="tapa"></div>
+                    <div class="agua" id="agua-container" ></div>
+                    <div class="electrodos"></div>
+                    <div class="chispa" id="chispa"></div>
+                    <div class="termometro"></div>
+                    <div id="etiqueta-temp" class="etiqueta-temp">-- °C</div>
+                    <div class="minicilindro"></div>
+                    <div class="mercurio" id="mercurio"></div>
+                    <div class="bubbles" id="bubbles"></div>
+                    <div class="flame" id="flame"></div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="text-gray-700 mb-2 font-medium flex items-center">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i> Estado del experimento:
+                    </p>
+                    <p id="estado" class="font-semibold text-lg">Preparado para iniciar</p>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 class="font-semibold text-blue-700 mb-2 flex items-center">
+                        <i class="fas fa-reaction mr-2"></i> Reacciones de Combustión:
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="font-semibold text-gray-700">Metano:</p>
+                            <p class="font-mono text-sm">CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l)</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="font-semibold text-gray-700">Etano:</p>
+                            <p class="font-mono text-sm">2C₂H₆(g) + 7O₂(g) → 4CO₂(g) + 6H₂O(l)</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="font-semibold text-gray-700">Propano:</p>
+                            <p class="font-mono text-sm">C₃H₈(g) + 5O₂(g) → 3CO₂(g) + 4H₂O(l)</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="font-semibold text-gray-700">Butano:</p>
+                            <p class="font-mono text-sm">2C₄H₁₀(g) + 13O₂(g) → 8CO₂(g) + 10H₂O(l)</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-gray-200">
+                            <p class="font-semibold text-gray-700">Tolueno:</p>
+                            <p class="font-mono text-sm">C₇H₈(l) + 9O₂(g) → 7CO₂(g) + 4H₂O(l)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información teórica -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-xl font-semibold mb-4 text-blue-700 flex items-center">
+                <i class="fas fa-book mr-2"></i> Información Teórica
+            </h2>
+            
+            <div class="prose max-w-none">
+                <p class="text-gray-700 mb-4">El calor de combustión es la energía liberada cuando un compuesto se quema completamente con oxígeno en condiciones estándar. En una bomba calorimétrica, este proceso se realiza en condiciones adiabáticas (sin transferencia de calor al entorno) para medir con precisión la energía liberada.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-lg text-blue-700 mb-2">Procedimiento experimental:</h3>
+                        <ol class="lista">
+                            <li>Se pesa una muestra del compuesto y se coloca en la bomba calorimétrica.</li>
+                            <li>La bomba se llena con oxígeno a alta presión (∼30 atm).</li>
+                            <li>Se sumerge la bomba en un baño de agua aislado térmicamente.</li>
+                            <li>Se registra la temperatura inicial del sistema.</li>
+                            <li>Se inicia la combustión mediante una chispa eléctrica.</li>
+                            <li>Se mide el aumento de temperatura del agua hasta que se estabiliza.</li>
+                            <li>Se calcula el calor liberado usando la capacidad calorífica del sistema.</li>
+                        </ol>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-semibold text-lg text-blue-700 mb-2">Cálculos:</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="font-mono text-sm mb-2">Calor liberado (Q):</p>
+                            <p class="text-center font-mono bg-white p-2 rounded border border-gray-200 mb-3">
+                                -n<sub>gas</sub> Q = m<sub>agua</sub> × c<sub>agua</sub> × ΔT + C<sub>calorímetro</sub> × ΔT
+                            </p>
+                            
+                            <p class="font-mono text-sm mb-2">Calor de combustión (ΔH<sub>c</sub>):</p>
+                            <p class="text-center font-mono bg-white p-2 rounded border border-gray-200">
+                                ΔH<sub>c</sub> = Q / n
+                            </p>
+                            
+                            <div class="mt-3 text-sm text-gray-600">
+                                <p>Donde:</p>
+                                <ul class="list-disc pl-5">
+                                    <li>m<sub>agua</sub>: masa de agua (g)</li>
+                                    <li>c<sub>agua</sub>: 4.18 J/g°C (capacidad calorífica del agua)</li>
+                                    <li>C<sub>calorímetro</sub>: capacidad calorífica del calorímetro</li>
+                                    <li>ΔT: cambio de temperatura (°C)</li>
+                                    <li>n: moles de compuesto quemado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 class="font-semibold text-blue-700 mb-2 flex items-center">
+                        <i class="fas fa-lightbulb mr-2"></i> Datos de referencia:
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr class="bg-blue-100">
+                                    <th class="py-2 px-4 border-b">Compuesto</th>
+                                    <th class="py-2 px-4 border-b">Fórmula</th>
+                                    <th class="py-2 px-4 border-b">Calor de combustión (kJ/mol)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-4 border-b">Metano</td>
+                                    <td class="py-2 px-4 border-b">CH₄</td>
+                                    <td class="py-2 px-4 border-b">890.0</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="py-2 px-4 border-b">Etano</td>
+                                    <td class="py-2 px-4 border-b">C₂H₆</td>
+                                    <td class="py-2 px-4 border-b">1560.0</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 border-b">Propano</td>
+                                    <td class="py-2 px-4 border-b">C₃H₈</td>
+                                    <td class="py-2 px-4 border-b">2220.0</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="py-2 px-4 border-b">Butano</td>
+                                    <td class="py-2 px-4 border-b">C₄H₁₀</td>
+                                    <td class="py-2 px-4 border-b">2878.0</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-4 border-b">Tolueno</td>
+                                    <td class="py-2 px-4 border-b">C₇H₈</td>
+                                    <td class="py-2 px-4 border-b">3910.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+     <footer class="mt-12 text-center text-gray-600 text-sm">
+            <p class="copy">© 2025 Laboratorio Virtual de Termoquímica | Desarrollado por Parra. J, Mendoza. A, Mencias. E, Orozco. MToapanta. 
+                J estudiantes de fisicoquímica ESPE con la colaboración de la Ing. Raquel Zuñiga.</p>
+
+        </footer>
+        
+
+    </div>
+
+    <script>
+        // Constantes físicas
+        const CpAcero = 0.005; // KJ/g°C
+        const masaAcero = 189.48; // g
+        const CpH2O = 0.00418; // KJ/g°C
+        const masaH2O = 0.216; // g
+        const R = 0.008314; // KJ/mol·K (constante de los gases)
+        
+        // Datos de los compuestos (kJ/mol)
+        const compuestos = {
+            metano: { 
+                formula: "CH₄", 
+                calorCombustion: -890.0,  // ΔHc (negativo porque es exotérmico)
+                nProductos: 1,  // CO2
+                nReactivos: 2,  // O2 (considerando 1 mol de CH4 + 2O2 -> CO2 + 2H2O)
+                color: "#4CAF50",
+                densidad: 0.717
+            },
+            etano: { 
+                formula: "C₂H₆", 
+                calorCombustion: -1560.0,
+                nProductos: 2,  // 2CO2
+                nReactivos: 3.5, // O2 (2C2H6 + 7O2 -> 4CO2 + 6H2O)
+                color: "#2196F3",
+                densidad: 1.356
+            },
+            propano: { 
+                formula: "C₃H₈", 
+                calorCombustion: -2220.0,
+                nProductos: 3,  // 3CO2
+                nReactivos: 5,   // O2 (C3H8 + 5O2 -> 3CO2 + 4H2O)
+                color: "#FF9800",
+                densidad: 2.020
+            },
+            butano: { 
+                formula: "C₄H₁₀", 
+                calorCombustion: -2878.0,
+                nProductos: 4,  // 4CO2
+                nReactivos: 6.5, // O2 (2C4H10 + 13O2 -> 8CO2 + 10H2O)
+                color: "#F44336",
+                densidad: 2.480
+            },
+            tolueno: { 
+                formula: "C₇H₈", 
+                calorCombustion: -3910.0,
+                nProductos: 7,  // 7CO2
+                nReactivos: 9,   // O2 (C7H8 + 9O2 -> 7CO2 + 4H2O)
+                color: "#9C27B0",
+                densidad: 0.867
+            }
+        };
+
+        // Variables del experimento
+        let experimentoActivo = false;
+        let temperaturaActual = 25.0;
+        let temperaturaFinal = 0;
+        let intervalo;
+
+        // Elementos del DOM
+        const iniciarBtn = document.getElementById('iniciar');
+        const compuestoSelect = document.getElementById('compuesto');
+        const molesInput = document.getElementById('moles');
+        const tempInicialInput = document.getElementById('temp_inicial');
+        const resultadosDiv = document.getElementById('resultados');
+        const tempFinalSpan = document.getElementById('temp_final');
+        const deltaTempSpan = document.getElementById('delta_temp');
+        const calorCombustionSpan = document.getElementById('calor_combustion');
+        const estadoSpan = document.getElementById('estado');
+        const chispa = document.getElementById('chispa');
+        const mercurio = document.getElementById('mercurio');
+        const exportarDatosBtn = document.getElementById('exportar_datos');
+        const reiniciarBtn = document.getElementById('reiniciar');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const aguaContainer = document.getElementById('agua-container');
+        const bubblesContainer = document.getElementById('bubbles');
+        const flame = document.getElementById('flame');
+
+        // Crear burbujas de animación
+        function crearBurbujas() {
+            bubblesContainer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // Posición aleatoria
+                const left = Math.random() * 160 + 60;
+                const size = Math.random() * 10 + 5;
+                const delay = Math.random() * 5;
+                
+                bubble.style.left = `${left}px`;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                bubble.style.bottom = '7px';
+                bubble.style.animationDelay = `${delay}s`;
+                
+                bubblesContainer.appendChild(bubble);
+            }
+        }
+
+        // Iniciar experimento
+        function iniciarExperimento() {
+            if (experimentoActivo) return;
+            
+            experimentoActivo = true;
+            iniciarBtn.disabled = true;
+            resultadosDiv.classList.add('hidden');
+            progressContainer.classList.remove('hidden');
+            
+            const compuesto = compuestoSelect.value;
+            temperaturaActual = parseFloat(tempInicialInput.value);
+            datosTemperatura = [{ tiempo: 0, temperatura: temperaturaActual }];
+            
+            estadoSpan.textContent = "Preparando el sistema...";
+            estadoSpan.className = "font-semibold text-lg text-yellow-600";
+            
+            // Actualizar termómetro
+            actualizarTermometro(temperaturaActual);
+            
+            
+            // Crear animación de burbujas
+            crearBurbujas();
+            
+            // Mostrar progreso
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    progressContainer.classList.add('hidden');
+                    comenzarCombustion();
+                }
+            }, 100);
+        }
+        
+        function comenzarCombustion() {
+            estadoSpan.textContent = "Iniciando combustión...";
+            
+            // Mostrar chispa y llama
+            chispa.style.opacity = "1";
+            flame.style.opacity = "0.8";
+            flame.style.top = "220px";
+            flame.style.left = "150px";
+            
+            // Simular combustión
+            setTimeout(() => {
+                chispa.style.opacity = "0";
+                estadoSpan.textContent = "Combustión en progreso...";
+                
+                // Obtener datos del compuesto
+                const compuesto = compuestoSelect.value;
+                const compuestoData = compuestos[compuesto];
+                const moles = parseFloat(molesInput.value);
+                const masaAgua = masaH2O; // Masa constante del agua (216 g)
+                const deltaN = compuestoData.nProductos - compuestoData.nReactivos;
+                const tempK = temperaturaActual + 273.15;
+                const deltaU = compuestoData.calorCombustion - (deltaN * R * tempK);
+                
+                // Calcular temperatura final despejando de:
+                // (-moles * ΔU) = (masaH2O * CpH2O * (Tf-Ti)) + (masaAcero * CpAcero * (Tf-Ti))
+                const numerador = (-moles * deltaU);
+                const denominador = (masaH2O * CpH2O) + (masaAcero * CpAcero);
+                const deltaT = numerador / denominador;
+                temperaturaFinal = temperaturaActual + deltaT;
+                
+                // Animación del aumento de temperatura
+                let tiempo = 0;
+                intervalo = setInterval(() => {
+                    tiempo += 1;
+                    
+                    // Actualizar barra de progreso
+                    const progress = Math.min(100, (tiempo / 30) * 100);
+                    progressBar.style.width = `${progress}%`;
+                    
+                    // Aumentar temperatura gradualmente
+                    if (temperaturaActual < temperaturaFinal) {
+                        temperaturaActual += deltaT /10;
+                        actualizarTermometro(temperaturaActual);
+                        datosTemperatura.push({ tiempo, temperatura: temperaturaActual });
+                        
+                    } else {
+                        // Experimento completado
+                        clearInterval(intervalo);
+                        experimentoActivo = false;
+                        iniciarBtn.disabled = false;
+                        estadoSpan.textContent = "Experimento completado";
+                        estadoSpan.className = "font-semibold text-lg text-green-600";
+                        
+                        // Ocultar llama
+                        flame.style.opacity = "0";
+                        
+                        // Mostrar resultados
+                        mostrarResultados(compuesto, moles, masaAgua, temperaturaActual);
+                    }
+                }, 200);
+            }, 1000);
+        }
+
+        // Actualizar termómetro visual
+        function actualizarTermometro(temp) {
+            // Escala aproximada: 20°C = 20px, 30°C = 120px
+            const altura = Math.min(120, Math.max(20, 20 + (temp - 20) * 10));
+            mercurio.style.height = `${altura}px`;
+            document.getElementById("etiqueta-temp").textContent = `${temp.toFixed(2)} °C`;
+        }
+
+        // Mostrar resultados del experimento
+        function mostrarResultados(compuesto, moles, masaAgua, tempFinal) {
+            const compuestoData = compuestos[compuesto];
+            const tempInicial = parseFloat(tempInicialInput.value);
+            const deltaT = tempFinal - tempInicial;
+            
+            // Calcular Δn (cambio en moles de gas)
+            const deltaN = compuestoData.nProductos - compuestoData.nReactivos;
+            
+            // Calcular ΔU (energía interna) usando ΔH = ΔU + Δn*R*T
+            // Convertir temperatura a Kelvin
+            const tempK = tempInicial + 273.15;
+            const deltaU = compuestoData.calorCombustion - (deltaN * R * tempK);
+            
+            // Calcular calor liberado (Q) usando la nueva fórmula
+            const Q = (masaH2O * CpH2O * deltaT) + (masaAcero * CpAcero * deltaT);
+            
+            // Mostrar resultados
+            tempFinalSpan.textContent = `${tempFinal.toFixed(2)} °C`;
+            deltaTempSpan.textContent = `${deltaT.toFixed(2)} °C`;
+            
+            calorCombustionSpan.innerHTML = `
+                <div class="mb-2">
+                    <span class="font-semibold">ΔH (molar):</span> ${compuestoData.calorCombustion.toFixed(2)} kJ/mol
+                </div>
+                <div class="mb-2">
+                    <span class="font-semibold">ΔU (molar):</span> ${deltaU.toFixed(2)} kJ/mol
+                </div>
+                <div class="mb-2">
+                    <span class="font-semibold">ΔH (total):</span> ${(compuestoData.calorCombustion * moles).toFixed(2)} kJ
+                </div>
+                <div>
+                    <span class="font-semibold">ΔU (total):</span> ${(deltaU * moles).toFixed(2)} kJ
+                </div>
+            `;
+            
+            resultadosDiv.classList.remove('hidden');
+            actualizarGrafica();
+        }
+        
+        // Exportar datos a CSV
+        function exportarDatos() {
+            if (datosTemperatura.length === 0) return;
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Tiempo (s),Temperatura (°C)\n";
+            
+            datosTemperatura.forEach(item => {
+                csvContent += `${item.tiempo},${item.temperatura.toFixed(2)}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "datos_calorimetria.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Reiniciar experimento
+        function reiniciarExperimento() {
+            clearInterval(intervalo);
+            experimentoActivo = false;
+            iniciarBtn.disabled = false;
+            resultadosDiv.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+            progressBar.style.width = "0%";
+            
+            temperaturaActual = parseFloat(tempInicialInput.value);
+            actualizarTermometro(temperaturaActual);
+            
+            // Restaurar nivel del agua
+            aguaContainer.style.height = "200px";
+            
+            estadoSpan.textContent = "Preparado para iniciar";
+            estadoSpan.className = "font-semibold text-lg";
+            
+            chispa.style.opacity = "0";
+            flame.style.opacity = "0";
+            
+            // Limpiar burbujas
+            bubblesContainer.innerHTML = "";
+            
+            // Reiniciar gráfica
+            inicializarGrafica();
+        }
+
+        // Event listeners
+        iniciarBtn.addEventListener('click', iniciarExperimento);
+        
+        exportarDatosBtn.addEventListener('click', exportarDatos);
+        
+        reiniciarBtn.addEventListener('click', reiniciarExperimento);
+        
+        // Cambiar color del agua según el compuesto seleccionado
+        compuestoSelect.addEventListener('change', function() {
+            const compuesto = this.value;
+            const color = compuestos[compuesto].color;
+            aguaContainer.style.backgroundColor = `${color}60`; // Color con transparencia
+        });
+
+        // Establecer color inicial del agua
+        const compuestoInicial = compuestoSelect.value;
+        const colorInicial = compuestos[compuestoInicial].color;
+        aguaContainer.style.backgroundColor = `${colorInicial}60`;
+    </script>
+</body>
+</html>

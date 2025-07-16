@@ -192,6 +192,7 @@
             opacity: 0;
             animation: flicker 0.5s infinite alternate;
         }
+
         @keyframes flicker {
             0%, 100% {
                 transform: scale(1);
@@ -509,12 +510,12 @@
     </div>
 
     <script>
-        // Constantes físicas
-        const CpAcero = 0.005; // KJ/g°C
-        const masaAcero = 189.48; // g
-        const CpH2O = 0.00418; // KJ/g°C
-        const masaH2O = 0.216; // g
-        const R = 0.008314; // KJ/mol·K (constante de los gases)
+// Constantes físicas
+        const CpAcero = 0.45; // J/g°C (capacidad calorífica del acero)
+        const masaAcero = 189.48; // g (masa del calorímetro)
+        const CpH2O = 4.18; // J/g°C (capacidad calorífica del agua)
+        const masaH2O = 1000; // g (masa de agua realista)
+        const R = 8.314; // J/mol·K (constante de los gases)
         
         // Datos de los compuestos (kJ/mol)
         const compuestos = {
@@ -646,75 +647,81 @@
         }
         
         function comenzarCombustion() {
-            estadoSpan.textContent = "Iniciando combustión...";
-            
-            // Mostrar chispa y llama
-            chispa.style.opacity = "1";
-            flame.style.opacity = "0.8";
-            flame.style.top = "220px";
-            flame.style.left = "150px";
-            
-            // Simular combustión
-            setTimeout(() => {
-                chispa.style.opacity = "0";
-                estadoSpan.textContent = "Combustión en progreso...";
-                
-                // Obtener datos del compuesto
-                const compuesto = compuestoSelect.value;
-                const compuestoData = compuestos[compuesto];
-                const moles = parseFloat(molesInput.value);
-                const masaAgua = masaH2O; // Masa constante del agua (216 g)
-                const deltaN = compuestoData.nProductos - compuestoData.nReactivos;
-                const tempK = temperaturaActual + 273.15;
-                const deltaU = compuestoData.calorCombustion - (deltaN * R * tempK);
-                
-                // Calcular temperatura final despejando de:
-                // (-moles * ΔU) = (masaH2O * CpH2O * (Tf-Ti)) + (masaAcero * CpAcero * (Tf-Ti))
-                const numerador = (-moles * deltaU);
-                const denominador = (masaH2O * CpH2O) + (masaAcero * CpAcero);
-                const deltaT = numerador / denominador;
-                temperaturaFinal = temperaturaActual + deltaT;
-                
-                // Animación del aumento de temperatura
-                let tiempo = 0;
-                intervalo = setInterval(() => {
-                    tiempo += 1;
-                    
-                    // Actualizar barra de progreso
-                    const progress = Math.min(100, (tiempo / 30) * 100);
-                    progressBar.style.width = `${progress}%`;
-                    
-                    // Aumentar temperatura gradualmente
-                    if (temperaturaActual < temperaturaFinal) {
-                        temperaturaActual += deltaT /10;
-                        actualizarTermometro(temperaturaActual);
-                        datosTemperatura.push({ tiempo, temperatura: temperaturaActual });
-                        
-                    } else {
-                        // Experimento completado
-                        clearInterval(intervalo);
-                        experimentoActivo = false;
-                        iniciarBtn.disabled = false;
-                        estadoSpan.textContent = "Experimento completado";
-                        estadoSpan.className = "font-semibold text-lg text-green-600";
-                        
-                        // Ocultar llama
-                        flame.style.opacity = "0";
-                        
-                        // Mostrar resultados
-                        mostrarResultados(compuesto, moles, masaAgua, temperaturaActual);
-                    }
-                }, 200);
-            }, 1000);
+    estadoSpan.textContent = "Iniciando combustión...";
+    
+    // Mostrar chispa y llama
+    chispa.style.opacity = "1";
+    flame.style.opacity = "0.8";
+    flame.style.top = "220px";
+    flame.style.left = "150px";
+    
+    // Simular combustión
+    setTimeout(() => {
+        chispa.style.opacity = "0";
+        estadoSpan.textContent = "Combustión en progreso...";
+        
+        // Obtener datos del compuesto
+        const compuesto = compuestoSelect.value;
+        const compuestoData = compuestos[compuesto];
+        const moles = parseFloat(molesInput.value);
+        const tempInicial = parseFloat(tempInicialInput.value);
+        
+        // 1. Calor liberado (Q) en Joules (valor absoluto)
+        const Q = Math.abs(compuestoData.calorCombustion * 1000 * moles); // Convertir kJ a J
+        
+        // 2. Capacidad calorífica total del sistema (agua + calorímetro)
+        const C_total = (masaH2O * CpH2O) + (masaAcero * CpAcero); // J/°C
+        
+        // 3. Calcular ΔT
+        const deltaT = Q / C_total;
+        
+        // 4. Temperatura final
+        temperaturaFinal = temperaturaActual + deltaT;
+        
+        // Validación de temperatura máxima
+        if (temperaturaFinal > 300) {
+            alert("¡Temperatura demasiado alta! Reduzca la cantidad de muestra.");
+            reiniciarExperimento();
+            return;
         }
-
-        // Actualizar termómetro visual
-        function actualizarTermometro(temp) {
-            // Escala aproximada: 20°C = 20px, 30°C = 120px
-            const altura = Math.min(120, Math.max(20, 20 + (temp - 20) * 10));
-            mercurio.style.height = `${altura}px`;
-            document.getElementById("etiqueta-temp").textContent = `${temp.toFixed(2)} °C`;
-        }
+        
+        // Animación del aumento de temperatura
+        let tiempo = 0;
+        intervalo = setInterval(() => {
+            tiempo += 1;
+            
+            // Actualizar barra de progreso
+            const progress = Math.min(100, (tiempo / 30) * 100);
+            progressBar.style.width = `${progress}%`;
+            
+            // Aumentar temperatura gradualmente
+            if (temperaturaActual < temperaturaFinal) {
+                temperaturaActual += deltaT / 10;
+                actualizarTermometro(temperaturaActual);
+                datosTemperatura.push({ tiempo, temperatura: temperaturaActual });
+            } else {
+                // Experimento completado
+                clearInterval(intervalo);
+                experimentoActivo = false;
+                iniciarBtn.disabled = false;
+                estadoSpan.textContent = "Experimento completado";
+                estadoSpan.className = "font-semibold text-lg text-green-600";
+                
+                // Ocultar llama
+                flame.style.opacity = "0";
+                
+                // Mostrar resultados
+                mostrarResultados(compuesto, moles, masaH2O, temperaturaActual);
+            }
+        }, 200);
+    }, 1000);
+}
+       function actualizarTermometro(temp) {
+    // Nueva escala: 20°C = 20px, 300°C = 200px
+    const altura = Math.min(200, Math.max(20, 20 + (temp - 20) * 0.6667));
+    mercurio.style.height = `${altura}px`;
+    document.getElementById("etiqueta-temp").textContent = `${temp.toFixed(2)} °C`;
+}
 
         // Mostrar resultados del experimento
         function mostrarResultados(compuesto, moles, masaAgua, tempFinal) {
